@@ -12,7 +12,7 @@ import (
 
 const (
 	FiberPort          = ":8080"
-	KafkaServerAddress = "localhost:9092"
+	KafkaServerAddress = "localhost:9094"
 	KafkaTopic         = "notifications"
 )
 
@@ -48,11 +48,13 @@ func sendKafkaMessage(producer sarama.SyncProducer,
 		return err
 	}
 
+	fmt.Println("From user found:", fromUser)
 	toUser, err := findUserByID(toID, users)
 	if err != nil {
 		return err
 	}
 
+	fmt.Println("To user found:", toUser)
 	notification := models.Notification{
 		From: fromUser,
 		To:   toUser, Message: message,
@@ -78,12 +80,14 @@ func sendNotification(c fiber.Ctx, producer sarama.SyncProducer, users []models.
 	if err != nil {
 		return fmt.Errorf("user id must be a number: %w", err)
 	}
+	fmt.Println("Sending notification by user id:", userId)
 	var reqBody notificationRequest
 	body := c.Body()
 	if err := json.Unmarshal(body, &reqBody); err != nil {
 		return fmt.Errorf("failed to unmarshal request body: %w", err)
 	}
 
+	fmt.Println("Request body:", reqBody)
 	if err := sendKafkaMessage(producer, users, c, userId, reqBody.ToUserId, reqBody.Message); err != nil {
 		return fmt.Errorf("failed to send kafka message: %w", err)
 	}
