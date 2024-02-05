@@ -1,0 +1,32 @@
+version: '3'
+services:
+  zookeeper_medium:
+    image: confluentinc/cp-zookeeper:6.1.0
+    ports:
+      - "2181:2181"
+    restart: always
+    environment:
+      ZOOKEEPER_SERVER_ID: "1"
+      ZOOKEEPER_CLIENT_PORT: "2181"
+      ZOOKEEPER_TICK_TIME: "2000"
+
+  kafka_medium:
+    image: confluentinc/cp-kafka:6.1.0
+    depends_on:
+      - "zookeeper_medium"
+    ports:
+      - "9094:9094"
+      - "9092:9092"
+    restart: always
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper_medium:2181"
+      KAFKA_ADVERTISED_LISTENERS: "LISTENER_INTERNAL://:9092,LISTENER_LOCAL://localhost:9094"
+      KAFKA_LISTENERS: "LISTENER_INTERNAL://:9092,LISTENER_LOCAL://:9094"
+      KAFKA_INTER_BROKER_LISTENER_NAME: "LISTENER_INTERNAL"
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: "LISTENER_INTERNAL:PLAINTEXT,LISTENER_LOCAL:PLAINTEXT"
+      KAFKA_DELETE_TOPIC_ENABLE: "true"
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_NETWORK_THREADS: "8"
+      KAFKA_NUM_IO_THREADS: "16"
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: "1"
